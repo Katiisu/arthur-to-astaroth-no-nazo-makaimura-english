@@ -26,6 +26,15 @@ jobs:
       - name: Build
         run: cargo build --release --locked
 
+      - name: Generate SHA256 checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem dist -File -Exclude "SHA256SUMS.txt" | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)"
+          } | Set-Content dist\SHA256SUMS.txt -Encoding utf8NoBOM
+
+
       - name: Package
         shell: pwsh
         run: |
