@@ -1,0 +1,21 @@
+[package]
+name = "nazo-english-patcher"
+version = "0.3.0"
+edition = "2021"
+description = "English patcher for Arthur to Astaroth no Nazo Makaimura: Incredible Toons (PlayStation)"
+license = "MIT"
+
+[dependencies]
+eframe = "0.37"
+rfd = "0.18"
+sha1_smol = "1"
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

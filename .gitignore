@@ -1,0 +1,14 @@
+/target
+/dist
+
+# Never commit game data
+*.bin
+*.cue
+*.chd
+*.iso
+*.img
+*.ecm
+*.md
+English Patch/
+
+*.wav
