@@ -26,25 +26,26 @@ jobs:
       - name: Build
         run: cargo build --release --locked
 
-      - name: Generate SHA256 checksums
-        shell: pwsh
-        run: |
-          Get-ChildItem dist -File -Exclude "SHA256SUMS.txt" | ForEach-Object {
-            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
-            "$hash  $($_.Name)"
-          } | Set-Content dist\SHA256SUMS.txt -Encoding utf8NoBOM
-
-
       - name: Package
         shell: pwsh
         run: |
-           New-Item -ItemType Directory -Force dist | Out-Null
-            Copy-Item target/release/nazo-english-patcher.exe dist/NazoMakaimura-English-Patcher.exe
-            Copy-Item assets/patch.ppf "dist/NazoMakaimura-English-${{ github.ref_name }}.ppf"
-            Get-ChildItem dist -File -Exclude "SHA256SUMS.txt" |
-              Get-FileHash -Algorithm SHA256 |
-              ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
-              Out-File dist/SHA256SUMS.txt -Encoding ascii
+          New-Item -ItemType Directory -Force dist | Out-Null
+
+          # Find the built .exe automatically (handles hyphens vs underscores in Cargo.toml)
+          $exe = Get-ChildItem target/release/*.exe | Select-Object -First 1
+          if (-not $exe) {
+            throw "No .exe found in target/release/. Check that src/main.rs or [[bin]] exists in Cargo.toml."
+          }
+
+          $ver = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "dev-${{ github.run_number }}" }
+
+          Copy-Item $exe.FullName dist/NazoMakaimura-English-Patcher.exe
+          Copy-Item assets/patch.ppf "dist/NazoMakaimura-English-$ver.ppf"
+
+          Get-ChildItem dist -File -Exclude "SHA256SUMS.txt" | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)"
+          } | Set-Content dist/SHA256SUMS.txt -Encoding utf8NoBOM
 
       - name: Smoke test the .exe
         shell: pwsh
@@ -60,9 +61,10 @@ jobs:
           path: dist/*
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           name: English Patch ${{ github.ref_name }}
           body_path: docs/RELEASE_NOTES.md
+          generate_release_notes: true
           files: dist/*
