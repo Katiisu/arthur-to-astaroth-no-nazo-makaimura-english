@@ -293,7 +293,7 @@ impl App {
 
         // Step 1: pick the disc
         let busy = self.busy();
-        ui.label(RichText::new("1.  Choose your Japanese disc").strong());
+        ui.label(RichText::new("1.  Choose your Japanese disc (Only require Track01").strong());
         ui.horizontal(|ui| {
             if ui
                 .add_enabled(!busy, egui::Button::new("Browse for .cue…"))
