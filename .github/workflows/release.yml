@@ -38,12 +38,13 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force dist | Out-Null
-          Copy-Item target/release/nazo-english-patcher.exe dist/NazoMakaimura-English-Patcher.exe
-          Copy-Item assets/patch.ppf "dist/NazoMakaimura-English-${{ github.ref_name }}.ppf"
-          Get-ChildItem dist | Get-FileHash -Algorithm SHA256 |
-            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
-            Out-File dist/SHA256SUMS.txt -Encoding ascii
+           New-Item -ItemType Directory -Force dist | Out-Null
+            Copy-Item target/release/nazo-english-patcher.exe dist/NazoMakaimura-English-Patcher.exe
+            Copy-Item assets/patch.ppf "dist/NazoMakaimura-English-${{ github.ref_name }}.ppf"
+            Get-ChildItem dist -File -Exclude "SHA256SUMS.txt" |
+              Get-FileHash -Algorithm SHA256 |
+              ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+              Out-File dist/SHA256SUMS.txt -Encoding ascii
 
       - name: Smoke test the .exe
         shell: pwsh
